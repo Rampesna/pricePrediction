@@ -30,12 +30,7 @@ class PricePredictionController extends Controller
      */
     public function check(CheckRequest $request)
     {
-        set_time_limit(86400);
-        $chromeDriver = ChromeDriver::start();
-        $chromeDriver->get('https://suchen.mobile.de/fahrzeuge/search.html?dam=0&isSearchRequest=true&ms=3500%3B73%3B%3B&ref=quickSearch&sb=rel&vc=Car');
-
-        return 1;
-
+        set_time_limit(3600);
         $response = $this->mobileDeService->getByParameters(
             $request->brand,
             $request->model,
@@ -48,8 +43,6 @@ class PricePredictionController extends Controller
             $request->powerFrom,
             $request->powerTo
         );
-
-        return $response->getData();
 
         return $this->httpResponse(
             $response->getMessage(),
