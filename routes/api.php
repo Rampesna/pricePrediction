@@ -20,10 +20,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('pricePrediction')->group(function () {
     Route::prefix('autoscout')->group(function () {
-        Route::get('check', [\App\Http\Controllers\Api\Autoscout\PricePredictionController::class, 'check']);
+        Route::post('check', [\App\Http\Controllers\Api\Autoscout\PricePredictionController::class, 'check']);
     });
 
     Route::prefix('mobilede')->group(function () {
-        Route::get('check', [\App\Http\Controllers\Api\MobileDe\PricePredictionController::class, 'check']);
+        Route::post('check', [\App\Http\Controllers\Api\MobileDe\PricePredictionController::class, 'check']);
     });
 });
