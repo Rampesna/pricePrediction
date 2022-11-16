@@ -1,28 +1,24 @@
 <?php
 
-namespace App\Http\Controllers\Api\MobileDe;
+namespace App\Http\Controllers\Api;
 
 use App\Core\Controller;
 use App\Core\HttpResponse;
-use App\Core\ServiceResponse;
-use App\Http\Requests\Api\MobileDe\PricePredictionController\CheckRequest;
-use App\Interfaces\IMobileDeService;
-use Facebook\WebDriver\Chrome\ChromeDriver;
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Request;
+use App\Http\Requests\Api\PricePredictionController\CheckRequest;
+use App\Interfaces\PricePrediction\IPricePredictionService;
 
 class PricePredictionController extends Controller
 {
     use HttpResponse;
 
     /**
-     * @var $mobileDeService
+     * @var $pricePredictionService
      */
-    private $mobileDeService;
+    private $pricePredictionService;
 
-    public function __construct(IMobileDeService $mobileDeService)
+    public function __construct(IPricePredictionService $pricePredictionService)
     {
-        $this->mobileDeService = $mobileDeService;
+        $this->pricePredictionService = $pricePredictionService;
     }
 
     /**
@@ -30,8 +26,7 @@ class PricePredictionController extends Controller
      */
     public function check(CheckRequest $request)
     {
-        set_time_limit(3600);
-        $response = $this->mobileDeService->getByParameters(
+        $response = $this->pricePredictionService->getByParameters(
             $request->brand,
             $request->model,
             $request->kilometerFrom,

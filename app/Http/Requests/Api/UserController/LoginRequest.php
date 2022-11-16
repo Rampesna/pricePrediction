@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Api\MobileDe\PricePredictionController;
+namespace App\Http\Requests\Api\UserController;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CheckRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,8 @@ class CheckRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'email' => 'required|email',
+            'password' => 'required|string',
         ];
     }
 }

@@ -14,5 +14,21 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+//    $response = \Illuminate\Support\Facades\Http::get('https://wiveda.de/api/v1/cars');
+//    $brands = collect(json_decode($response->body()));
+//
+//    foreach ($brands as $brand => $models) {
+//        $newCarBrand = new \App\Models\Eloquent\CarBrand;
+//        $newCarBrand->name = $brand;
+//        $newCarBrand->save();
+//
+//        foreach ($models as $model) {
+//            $newCarBrandModel = new \App\Models\Eloquent\CarBrandModel;
+//            $newCarBrandModel->car_brand_id = $newCarBrand->id;
+//            $newCarBrandModel->name = $model;
+//            $newCarBrandModel->save();
+//        }
+//    }
+//
+//    return 'Trastransfer completed';
 });

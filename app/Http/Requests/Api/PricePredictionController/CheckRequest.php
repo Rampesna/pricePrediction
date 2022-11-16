@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Api\Autoscout\PricePredictionController;
+namespace App\Http\Requests\Api\PricePredictionController;
 
 use Illuminate\Foundation\Http\FormRequest;
 

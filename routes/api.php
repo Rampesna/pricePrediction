@@ -18,12 +18,21 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('pricePrediction')->group(function () {
-    Route::prefix('autoscout')->group(function () {
-        Route::post('check', [\App\Http\Controllers\Api\Autoscout\PricePredictionController::class, 'check']);
+Route::middleware([
+    'auth:user_api'
+])->group(function () {
+    Route::post('login', [\App\Http\Controllers\Api\UserController::class, 'login'])->withoutMiddleware('auth:user_api');
+
+    Route::prefix('carBrand')->group(function () {
+        Route::get('getAll', [\App\Http\Controllers\Api\CarBrandController::class, 'getAll']);
     });
 
-    Route::prefix('mobilede')->group(function () {
-        Route::post('check', [\App\Http\Controllers\Api\MobileDe\PricePredictionController::class, 'check']);
+    Route::prefix('carBrandModel')->group(function () {
+        Route::get('getAll', [\App\Http\Controllers\Api\CarBrandModelController::class, 'getAll']);
+        Route::get('getByCarBrandId', [\App\Http\Controllers\Api\CarBrandModelController::class, 'getByCarBrandId']);
+    });
+
+    Route::prefix('pricePrediction')->group(function () {
+        Route::post('check', [\App\Http\Controllers\Api\PricePredictionController::class, 'check']);
     });
 });

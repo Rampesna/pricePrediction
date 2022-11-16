@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Interfaces;
+namespace App\Interfaces\PricePrediction;
 
 use App\Core\ServiceResponse;
 

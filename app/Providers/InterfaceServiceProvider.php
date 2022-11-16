@@ -2,10 +2,14 @@
 
 namespace App\Providers;
 
-use App\Interfaces\IAutoscoutService;
-use App\Interfaces\IMobileDeService;
-use App\Services\Autoscout\AutoscoutService;
-use App\Services\MobileDe\MobileDeService;
+use App\Interfaces\Eloquent\ICarBrandModelService;
+use App\Interfaces\Eloquent\ICarBrandService;
+use App\Interfaces\Eloquent\IUserService;
+use App\Interfaces\PricePrediction\IPricePredictionService;
+use App\Services\Eloquent\CarBrandModelService;
+use App\Services\Eloquent\CarBrandService;
+use App\Services\Eloquent\UserService;
+use App\Services\PricePrediction\PricePredictionService;
 use Illuminate\Support\ServiceProvider;
 
 class InterfaceServiceProvider extends ServiceProvider
@@ -17,8 +21,10 @@ class InterfaceServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind(IAutoscoutService::class, AutoscoutService::class);
-        $this->app->bind(IMobileDeService::class, MobileDeService::class);
+        $this->app->bind(IPricePredictionService::class, PricePredictionService::class);
+        $this->app->bind(IUserService::class, UserService::class);
+        $this->app->bind(ICarBrandService::class, CarBrandService::class);
+        $this->app->bind(ICarBrandModelService::class, CarBrandModelService::class);
     }
 
     /**
