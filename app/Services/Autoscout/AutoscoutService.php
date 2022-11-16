@@ -3,9 +3,9 @@
 namespace App\Services\Autoscout;
 
 use App\Core\ServiceResponse;
-use App\Interfaces\IAutoscoutService;
+use App\Interfaces\PricePrediction\IPricePredictionService;
 
-class AutoscoutService extends BaseAutoscoutService implements IAutoscoutService
+class AutoscoutService extends BaseAutoscoutService implements IPricePredictionService
 {
     /**
      * @param mixed $brand
