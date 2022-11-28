@@ -3,12 +3,30 @@
 namespace App\Services\PricePrediction;
 
 use App\Core\ServiceResponse;
+use App\Interfaces\Eloquent\ITransformService;
 use App\Interfaces\PricePrediction\IPricePredictionService;
 use App\Models\Eloquent\Transform;
 use Facebook\WebDriver\Chrome\ChromeDriver;
+use Facebook\WebDriver\Chrome\ChromeOptions;
+use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Facebook\WebDriver\Remote\RemoteWebDriver;
 
 class PricePredictionService extends BasePricePredictionService implements IPricePredictionService
 {
+    /**
+     * @var $transformService
+     */
+    private $transformService;
+
+    /**
+     * @param ITransformService $transformService
+     */
+    public function __construct(ITransformService $transformService)
+    {
+        parent::__construct();
+        $this->transformService = $transformService;
+    }
+
     /**
      * @param mixed $brand
      * @param mixed $model
@@ -20,6 +38,8 @@ class PricePredictionService extends BasePricePredictionService implements IPric
      * @param mixed $gearBoxes
      * @param mixed $powerFrom
      * @param mixed $powerTo
+     * @param mixed $bodyType
+     * @param mixed $doors
      *
      * @return ServiceResponse
      */
@@ -33,31 +53,65 @@ class PricePredictionService extends BasePricePredictionService implements IPric
         $fuelTypes,
         $gearBoxes,
         $powerFrom,
-        $powerTo
+        $powerTo,
+        $bodyType,
+        $doors
     ): ServiceResponse
     {
+        putenv('WEBDRIVER_CHROME_DRIVER=/usr/bin/chromedriver');
         set_time_limit(3600);
         $endpoint = $this->mobileDeUrl;
         $priceList = [];
 
+        //$car = collect();
+        //$response = $client->post('',[
+        //    'query' => [
+        //    'yearFrom' => $car->registration_date - 2, (registration_date='2015-01-01')
+        //    'yearTo' => $car->registration_date + 2, (sadece yil alinacak)
+        //    'kilometerFrom' => $car->km - 5000,
+        //    'kilometerTo' => $car->km + 5000,
+        //    'powerFrom' => $car->kiloWatt - 40, (PS -> kW a cevirilip getirilecek)
+        //    'powerTo' => $car->kiloWatt + 40,
+        //    ]
+        //]);
+
+        $targetBrand = $this->transformService->getTargetValue('brand', $brand, 'mobilede')->getData();
+        $targetModel = $this->transformService->getTargetValue('model', $model, 'mobilede')->getData();
+        $targetFuelTypes = collect($fuelTypes)->map(function ($fuelType) {
+            return $this->transformService->getTargetValue('fuelTypes', $fuelType, 'mobilede')->getData();
+        })->all();
+        $targetGearBoxes = collect($gearBoxes)->map(function ($gearBox) {
+            return $this->transformService->getTargetValue('gearBoxes', $gearBox, 'mobilede')->getData();
+        })->all();
+        $targetBodyType = $this->transformService->getTargetValue('bodyType', $bodyType, 'mobilede')->getData();
+        $targetDoors = $this->transformService->getTargetValue('doors', $doors, 'mobilede')->getData();
+
         $parameters = [
-            $targetBrand = Transform::where('relation_type', 'brand')->where('relation_id', $brand)->where('target_system', 'mobilede')->first()->target_value,
-            $targetModel = Transform::where('relation_type', 'model')->where('relation_id', $model)->where('target_system', 'mobilede')->first()->target_value,
             'ms' => $targetBrand . ';' . $targetModel,
             'ml' => $kilometerFrom . ':' . $kilometerTo,
             'fr' => $yearFrom . ':' . $yearTo,
-            'ft' => implode(' ', $fuelTypes),
-            'tr' => implode(' ', $gearBoxes),
+            'ft' => implode(' ', $targetFuelTypes),
+            'tr' => implode(' ', $targetGearBoxes),
             'powertype' => 'kw',
             'pw' => $powerFrom . ':' . $powerTo,
+            'c' => $targetBodyType,
             'cn' => 'DE',
+            'sortOption.sortBy' => 'searchNetGrossPrice',
+            'sortOption.sortOrder' => 'ASCENDING',
             'isSearchRequest' => 'true',
             'page' => 1
         ];
 
-        $chromeDriver = ChromeDriver::start();
-        $chromeDriver->manage()->window()->minimize();
-        $chromeDriver->get($endpoint . '?' . http_build_query($parameters));
+
+
+        //$chromeDriver->manage()->window()->minimize();
+        $mobileDeLastUrl = $endpoint . '?' . http_build_query($parameters) . ($targetDoors && $targetDoors != '' ? '&' . $targetDoors : '');
+        $chromeOptions = new ChromeOptions();
+        $chromeOptions->addArguments(['--headless', '--disable-gpu', '--window-size=1920,1080', '--no-sandbox', '--disable-dev-shm-usage']);
+        $capabilities = DesiredCapabilities::chrome();
+        $capabilities->setCapability(ChromeOptions::CAPABILITY_W3C, $chromeOptions);
+        $chromeDriver = ChromeDriver::start($capabilities);
+        $chromeDriver->get($mobileDeLastUrl);
         $sources = $chromeDriver->getPageSource();
 
         preg_match_all('~<span class=\"h3 u-block\">(.*?)&nbsp;€</span>~', $sources, $prices);
@@ -67,25 +121,39 @@ class PricePredictionService extends BasePricePredictionService implements IPric
         }
 
         $chromeDriver->quit();
-
+        $autoScoutLastUrl = '';
         if (count($priceList) < 15) {
-            $targetBrand = Transform::where('relation_type', 'brand')->where('relation_id', $brand)->where('target_system', 'autoscout')->first()->target_value;
-            $targetModel = Transform::where('relation_type', 'model')->where('relation_id', $model)->where('target_system', 'autoscout')->first()->target_value;
+            $targetBrand = $this->transformService->getTargetValue('brand', $brand, 'autoscout')->getData();
+            $targetModel = $this->transformService->getTargetValue('model', $model, 'autoscout')->getData();
             $endpoint = $this->autoScoutUrl . '/' . $targetBrand . '/' . $targetModel;
+            $targetFuelTypes = collect($fuelTypes)->map(function ($fuelType) {
+                return $this->transformService->getTargetValue('fuelTypes', $fuelType, 'autoscout')->getData();
+            })->all();
+            $targetGearBoxes = collect($gearBoxes)->map(function ($gearBox) {
+                return $this->transformService->getTargetValue('gearBoxes', $gearBox, 'autoscout')->getData();
+            })->all();
+            $targetBodyType = $this->transformService->getTargetValue('bodyType', $bodyType, 'autoscout')->getData();
+            $targetDoors = $this->transformService->getTargetValue('doors', $doors, 'autoscout')->getData();
+
             $parameters = [
                 'kmfrom' => $kilometerFrom,
                 'kmto' => $kilometerTo,
                 'fregfrom' => $yearFrom,
                 'fregto' => $yearTo,
-                'fuel' => implode(' ', $fuelTypes),
-                'gear' => implode(' ', $gearBoxes),
+                'fuel' => implode(' ', $targetFuelTypes),
+                'gear' => implode(' ', $targetGearBoxes),
                 'powertype' => 'kw',
                 'powerfrom' => $powerFrom,
                 'powerto' => $powerTo,
+                'body' => $targetBodyType,
+                'sort' => 'price',
+                'desc' => "0",
+                'cy' => "D",
                 'page' => 1,
             ];
 
-            $response = $this->client->get($endpoint . '?' . http_build_query($parameters), [
+            $autoScoutLastUrl = $endpoint . '?' . http_build_query($parameters) . ($targetDoors && $targetDoors != '' ? '&' . $targetDoors : '');
+            $response = $this->client->get($autoScoutLastUrl, [
                 'headers' => [
                     'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
                     'Accept-Encoding' => 'gzip, deflate, br',
@@ -112,13 +180,21 @@ class PricePredictionService extends BasePricePredictionService implements IPric
             }
         }
 
-        $averagePrice = array_sum($priceList) / count($priceList);
+        if (count($priceList) == 0) {
+            $averagePrice = "0";
+        } else {
+            $averagePrice = array_sum($priceList) / count($priceList);
+        }
 
         return new ServiceResponse(
             true,
             'Price prediction is successful.',
             200,
-            intval($averagePrice)
+            [
+                'mobileDeResultsUrl' => $mobileDeLastUrl,
+                'autoscoutResultsUrl' => $autoScoutLastUrl,
+                'avarage' => intval($averagePrice)
+            ]
         );
     }
 }

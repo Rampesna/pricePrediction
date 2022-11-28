@@ -8,10 +8,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CarBrandModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory; //, SoftDeletes;
 
     public function carBrand()
     {
         return $this->belongsTo(CarBrand::class);
     }
+
+//    public function carBrandModels()
+//    {
+//        return $this->hasMany(CarBrandModel::class);
+//    }
 }

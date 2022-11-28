@@ -36,7 +36,9 @@ class PricePredictionController extends Controller
             $request->fuelTypes ?? [],
             $request->gearBoxes ?? [],
             $request->powerFrom,
-            $request->powerTo
+            $request->powerTo,
+            $request->bodyType,
+            $request->doors
         );
 
         return $this->httpResponse(

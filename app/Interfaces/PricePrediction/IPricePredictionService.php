@@ -16,7 +16,10 @@ interface IPricePredictionService
      * @param mixed $fuelTypes
      * @param mixed $gearBoxes
      * @param mixed $powerFrom
-     * @param mixed $powerTo
+     * @param mixed $powerTo,
+     * @param mixed $bodyType,
+     * @param mixed $doors,
+     *
      *
      * @return ServiceResponse
      */
@@ -30,6 +33,10 @@ interface IPricePredictionService
         $fuelTypes,
         $gearBoxes,
         $powerFrom,
-        $powerTo
+        $powerTo,
+        $bodyType,
+        $doors
+
+
     ): ServiceResponse;
 }
