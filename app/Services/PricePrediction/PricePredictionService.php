@@ -5,11 +5,9 @@ namespace App\Services\PricePrediction;
 use App\Core\ServiceResponse;
 use App\Interfaces\Eloquent\ITransformService;
 use App\Interfaces\PricePrediction\IPricePredictionService;
-use App\Models\Eloquent\Transform;
 use Facebook\WebDriver\Chrome\ChromeDriver;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
-use Facebook\WebDriver\Remote\RemoteWebDriver;
 
 class PricePredictionService extends BasePricePredictionService implements IPricePredictionService
 {
@@ -58,7 +56,7 @@ class PricePredictionService extends BasePricePredictionService implements IPric
         $doors
     ): ServiceResponse
     {
-        putenv('WEBDRIVER_CHROME_DRIVER=/usr/bin/chromedriver');
+        putenv('WEBDRIVER_CHROME_DRIVER=/var/www/html/chromedriver');
         set_time_limit(3600);
         $endpoint = $this->mobileDeUrl;
         $priceList = [];
@@ -103,9 +101,20 @@ class PricePredictionService extends BasePricePredictionService implements IPric
         ];
 
 
-
-        //$chromeDriver->manage()->window()->minimize();
         $mobileDeLastUrl = $endpoint . '?' . http_build_query($parameters) . ($targetDoors && $targetDoors != '' ? '&' . $targetDoors : '');
+
+
+
+
+
+
+
+
+
+
+
+
+
         $chromeOptions = new ChromeOptions();
         $chromeOptions->addArguments(['--headless', '--disable-gpu', '--window-size=1920,1080', '--no-sandbox', '--disable-dev-shm-usage']);
         $capabilities = DesiredCapabilities::chrome();
@@ -113,6 +122,22 @@ class PricePredictionService extends BasePricePredictionService implements IPric
         $chromeDriver = ChromeDriver::start($capabilities);
         $chromeDriver->get($mobileDeLastUrl);
         $sources = $chromeDriver->getPageSource();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         preg_match_all('~<span class=\"h3 u-block\">(.*?)&nbsp;€</span>~', $sources, $prices);
 
